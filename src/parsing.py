@@ -5,7 +5,7 @@ from itertools import zip_longest
 from typing import Literal, get_origin, get_args
 from .variants import variants
 from .utils import recolor
-from PIL import Image
+from PIL import Image, ImageMath
 from .errors import BadInputError
 from .customtiles import get_customtile
 from types import GenericAlias
@@ -117,6 +117,15 @@ def parse_tile(tile_string: str, *, flags: dict[str, tuple[str, ...]], override_
         val = randint(min_val, max_val)
         start, end = match.span()
         tile_string = tile_string[:start] + str(val) + tile_string[end:]
+    
+    while match := re.search(r"\+{([^\{\}]+)}", tile_string):
+        expr = match.group(1)
+        try:
+            replacewith = str(ImageMath.eval(expr))
+        except Exception as e:
+            raise BadInputError(f"Your expression raised a {type(e).__name__}: {e.args[0]}") from e
+        start, end = match.span()
+        tile_string = tile_string[:start] + str(replacewith) + tile_string[end:]
         
     prefix = flags.get("text", ("",))
     assert len(prefix) < 2, "Text flag only has one arg"

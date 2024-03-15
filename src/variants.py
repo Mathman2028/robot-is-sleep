@@ -437,6 +437,14 @@ def macro(tile: Tile, name: str, *args: str, flags: dict):
         val = randint(min_val, max_val)
         start, end = match.span()
         value = value[:start] + str(val) + value[end:]
+    while match := re.search(r"\+{([^\{\}]+)}", value):
+        expr = match.group(1)
+        try:
+            replacewith = str(ImageMath.eval(expr))
+        except Exception as e:
+            raise BadInputError(f"Your expression raised a {type(e).__name__}: {e.args[0]}") from e
+        start, end = match.span()
+        value = value[:start] + str(replacewith) + value[end:]
     splitted = split_outside_brackets(value, ":")
     macro_vars = [parse_variant(i, flags=flags) for i in splitted]
     for i in macro_vars:
