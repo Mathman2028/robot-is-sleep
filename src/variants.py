@@ -873,3 +873,9 @@ def snip(tile: Tile, left: int, top: int, right: int, bottom: int, *, flags: dic
         image = tile.images[wobble]
         draw = ImageDraw.Draw(image)
         draw.rectangle(((left, top), (right, bottom)), fill=0)
+
+@variant()
+def wrap(tile: Tile, x: int, y: int, *, flags: dict):
+    for wobble in range(3):
+        sprite = np.asarray(tile.images[wobble])
+        tile.images[wobble] = Image.fromarray(np.roll(sprite, (y, x), (0, 1)))
