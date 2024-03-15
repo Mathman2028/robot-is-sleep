@@ -56,7 +56,6 @@ def render(tiles: list[list[list[Tile]]], *, flags: dict[str, tuple[str, ...]]):
                         tile = stack[k]
                         image = tile.images[(wobble + ((i + j) if deterministic else tile.wobble_offset)) % 3]
                         base_image.alpha_composite(image, (j * size + tile.displacement[0], i * size + tile.displacement[1]))
-        base_image.save(f"debug{wobble}.png", "png")
         if "raw" in flags:
             renders.append(base_image)
         else:
