@@ -2,7 +2,7 @@ from types import FunctionType
 from typing import Literal, cast, TypeAlias
 from .tiles import Tile
 from .colors import Color, PaletteColor, HexColor
-from .utils import recolor, get_all_colors, count_all_instances_of_color, only_color
+from .utils import recolor, get_all_colors, count_all_instances_of_color, only_color, prereplace
 from PIL import Image, ImageFilter, ImageMath, ImageEnhance, ImageDraw
 from .tiles import tiles
 import numpy as np
@@ -432,19 +432,7 @@ def macro(tile: Tile, name: str, *args: str, flags: dict):
     value = value.replace("$W", str(tile.images[0].width))
     value = value.replace("$H", str(tile.images[0].height))
     value = value.replace("$A", str(tile.anim_frame))
-    while match := re.search(r"%(-?\d+)\|(-?\d+)", value):
-        min_val, max_val = [int(i) for i in match.groups()]
-        val = randint(min_val, max_val)
-        start, end = match.span()
-        value = value[:start] + str(val) + value[end:]
-    while match := re.search(r"\+{([^\{\}]+)}", value):
-        expr = match.group(1)
-        try:
-            replacewith = str(ImageMath.eval(expr))
-        except Exception as e:
-            raise BadInputError(f"Your expression raised a {type(e).__name__}: {e.args[0]}") from e
-        start, end = match.span()
-        value = value[:start] + str(replacewith) + value[end:]
+    value = prereplace(value)
     splitted = split_outside_brackets(value, ":")
     macro_vars = [parse_variant(i, flags=flags) for i in splitted]
     for i in macro_vars:

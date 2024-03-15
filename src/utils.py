@@ -2,6 +2,10 @@ import numpy as np
 from .tiles import Tile, tiles as tile_data
 from PIL import Image
 from typing import Literal
+import re
+from .errors import BadInputError
+from random import randint
+from PIL import ImageMath
 
 def recolor(tile: Tile, color: tuple[int, int, int, int]): # stole this directly from richolas
     for wobble in range(3):
@@ -95,3 +99,20 @@ def find_all(a_str, sub):
         if start == -1: return
         yield start
         start += len(sub) # use start += 1 to find overlapping matches
+
+def prereplace(string):
+    while match := re.search(r"%(-?\d+)\|(-?\d+)", string):
+        min_val, max_val = [int(i) for i in match.groups()]
+        val = randint(min_val, max_val)
+        start, end = match.span()
+        string = string[:start] + str(val) + string[end:]
+    
+    while match := re.search(r"\+\[((?:(?:\[[^\[\]]+\])|[^\[\]])+)\]", string):
+        expr = match.group(1)
+        try:
+            replacewith = str(ImageMath.eval(expr, range_=range, list_=list, dict_=dict, set_=set, str_=str, join=lambda x: "".join(x)))
+        except Exception as e:
+            raise BadInputError(f"Your expression raised a {type(e).__name__}: {e.args[0]}") from e
+        start, end = match.span()
+        string = string[:start] + str(replacewith) + string[end:]
+    return string

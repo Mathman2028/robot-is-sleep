@@ -4,14 +4,13 @@ import inspect
 from itertools import zip_longest
 from typing import Literal, get_origin, get_args
 from .variants import variants
-from .utils import recolor
-from PIL import Image, ImageMath
+from .utils import recolor, prereplace
+from PIL import Image
 from .errors import BadInputError
 from .customtiles import get_customtile
 from types import GenericAlias
 from .tiles import tiles
 import random
-import re
 from random import randint
 
 PREFIX_CHARS = {
@@ -112,20 +111,7 @@ def parse_variant(var_string: str, *, flags: dict[str, tuple[str, ...]]):
 def parse_tile(tile_string: str, *, flags: dict[str, tuple[str, ...]], override_prefix = None):
     if tile_string == "":
         tile_string = "-"
-    while match := re.search(r"%(-?\d+)\|(-?\d+)", tile_string):
-        min_val, max_val = [int(i) for i in match.groups()]
-        val = randint(min_val, max_val)
-        start, end = match.span()
-        tile_string = tile_string[:start] + str(val) + tile_string[end:]
-    
-    while match := re.search(r"\+{([^\{\}]+)}", tile_string):
-        expr = match.group(1)
-        try:
-            replacewith = str(ImageMath.eval(expr))
-        except Exception as e:
-            raise BadInputError(f"Your expression raised a {type(e).__name__}: {e.args[0]}") from e
-        start, end = match.span()
-        tile_string = tile_string[:start] + str(replacewith) + tile_string[end:]
+    tile_string = prereplace(tile_string)
         
     prefix = flags.get("text", ("",))
     assert len(prefix) < 2, "Text flag only has one arg"
