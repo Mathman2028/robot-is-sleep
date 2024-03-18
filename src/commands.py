@@ -227,7 +227,7 @@ Subcommands:
         output = ""
         for i in range(frame_count):
             t = i / frame_count
-            output += str(round(((1 - t) ** 3) * start + (1 - (1 - t) ** 3) * end)) + " "
+            output += str(((1 - t) ** 3) * start + (1 - (1 - t) ** 3) * end) + " "
         await ctx.send(output)
     
     @commands.command()
