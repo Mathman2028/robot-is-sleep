@@ -875,3 +875,22 @@ def wrap(tile: Tile, x: int, y: int, *, flags: dict):
     for wobble in range(3):
         sprite = np.asarray(tile.images[wobble])
         tile.images[wobble] = Image.fromarray(np.roll(sprite, (y, x), (0, 1)))
+
+@variant()
+def clip(tile: Tile, *, flags: dict):
+    size = flags.get("size", (24,))
+    assert len(size) < 2, "Size flag only has one arg"
+    if len(size) == 0:
+        size = 32
+    else:
+        size, = size
+    try:
+        size = int(size)
+    except ValueError:
+        raise BadInputError("size bad")
+    offset = ((tile.images[0].width - size) // 2, (tile.images[0].height - size) // 2)
+    for wobble in range(3):
+        image = tile.images[wobble]
+        image = image.crop((offset[0], offset[1], size + offset[0], size + offset[1]))
+        tile.images[wobble] = image
+    tile.displacement = (tile.displacement[0] + offset[0], tile.displacement[1] + offset[1])
