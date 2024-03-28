@@ -31,7 +31,7 @@ def render(tiles: list[list[list[Tile]]], *, flags: dict[str, tuple[str, ...]]):
     try:
         size = int(size)
     except ValueError:
-        raise BadInputError("badbad")
+        raise BadInputError("size bad")
     
     dynamictiling(tiles)
     height = len(tiles)
