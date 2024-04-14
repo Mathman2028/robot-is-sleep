@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from PIL import Image
-from .paths import SPRITES_PATH, CUSTOM_SPRITES_PATH, JSONS_PATH
+from .paths import SPRITES_PATH, CUSTOM_SPRITES_PATH, JSONS_PATH, WORLDS_PATH
 from random import randrange
 from .colors import Color, PaletteColor
 import json
@@ -129,7 +129,10 @@ class Tile:
                 try:
                     for wobble in range(3):
                         if self.data["source"] == "baba":
-                            image = Image.open(SPRITES_PATH / f"{self.data["sprite"]}_{self.anim_frame}_{wobble + 1}.png")
+                            try:
+                                image = Image.open(SPRITES_PATH / f"{self.data["sprite"]}_{self.anim_frame}_{wobble + 1}.png")
+                            except FileNotFoundError:
+                                image = Image.open(WORLDS_PATH / "baba" / "Sprites" / f"{self.data["sprite"]}_{self.anim_frame}_{wobble + 1}.png")
                         else:
                             image = Image.open(CUSTOM_SPRITES_PATH / self.data["source"] / f"{self.data["sprite"]}_{self.anim_frame}_{wobble + 1}.png")
                         self.images[wobble] = image.convert("RGBA")
