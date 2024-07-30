@@ -56,3 +56,5 @@ sprites/
 customtiles.json
 macros.json
 .vscode/
+slicer.py
+sliced/
